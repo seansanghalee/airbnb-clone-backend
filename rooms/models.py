@@ -37,6 +37,7 @@ class Room(CommonModel):
     owner = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
+        related_name="rooms",
     )
     amenities = models.ManyToManyField("rooms.Amenity")
     category = models.ForeignKey(
@@ -44,6 +45,7 @@ class Room(CommonModel):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
+        related_name="rooms",
     )
 
     def __str__(self):
