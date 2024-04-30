@@ -1,35 +1,58 @@
-from django.shortcuts import render
-from .models import Room
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
+from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.views import APIView
+
+from .models import Amenity
+from .serializers import AmenitySerializer
 
 
-# Create your views here.
-def see_rooms(request):
-    rooms = Room.objects.all()
-    return render(
-        request,
-        "rooms.html",
-        {
-            "rooms": rooms,
-            "title": "Rooms",
-        },
-    )
-
-
-def see_room(request, room_pk):
-    try:
-        room = Room.objects.get(pk=room_pk)
-        return render(
-            request,
-            "room.html",
-            {
-                "room": room,
-            },
+class Amenities(APIView):
+    def get(self, request):
+        amenities = Amenity.objects.all()
+        serializer = AmenitySerializer(
+            amenities,
+            many=True,
         )
-    except Room.DoesNotExist:
-        return render(
-            request,
-            "room.html",
-            {
-                "not_found": True,
-            },
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AmenitySerializer(data=request.data)
+        if serializer.is_valid():
+            amenity = serializer.save()
+            return Response(AmenitySerializer(amenity).data)
+        else:
+            return Response(serializer.errors)
+
+
+class AmenityDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Amenity.objects.get(pk=pk)
+        except Amenity.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        return Response(
+            AmenitySerializer(
+                self.get_object(pk),
+            ).data
         )
+
+    def put(self, request, pk):
+        amenity = self.get_object(pk)
+        serializer = AmenitySerializer(
+            amenity,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            updated_amenity = serializer.save()
+            return Response(AmenitySerializer(updated_amenity).data)
+        else:
+            return Response(serializer.errors)
+
+    def delete(self, request, pk):
+        amenity = self.get_object(pk)
+        amenity.delete()
+        return Response(HTTP_204_NO_CONTENT)
