@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from users.serializers import TinyUserSerializer
 from categories.serializers import CategorySerializer
 from .models import Amenity, Room
+from reviews.serializers import ReviewSerializer
 
 
 class AmenitySerializer(ModelSerializer):
